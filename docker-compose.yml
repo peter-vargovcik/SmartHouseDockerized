@@ -1,0 +1,46 @@
+version: '3'
+
+volumes:
+  database_data:
+    driver: local
+
+services:
+################################
+#   Setup postgres container
+################################
+  db:
+    image: postgres:latest
+    volumes:
+      - database_data:/var/lib/postgresql/data
+
+################################
+#   Setup node container
+################################
+  server:
+    build: ./datacollector
+    expose:
+      - 8080
+    ports:
+      - 2001:8080
+    links:
+      - db
+    environment:
+      - PGHOST=db
+      - PGDATABASE=postgres
+      - PGUSER=postgres
+
+################################
+#   Setup frontend container
+################################
+  frontend:
+    build: 
+      context: ./my-dashboard
+    expose:
+      - 2000
+    ports:
+      - 2000:3000
+#    volumes:
+#      - /my-dashboard/:/usr/app
+#      - /usr/app/node_modules
+#    links:
+#      - server  
