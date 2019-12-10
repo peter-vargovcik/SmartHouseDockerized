@@ -16,4 +16,9 @@ public class App {
     String hello() {
         return "Hello World!";
     }
+
+    @RequestMapping(value = "/test")
+    String hello2() {
+        return "Hello World Test That!";
+    }
 }
