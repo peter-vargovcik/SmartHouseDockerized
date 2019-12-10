@@ -34,7 +34,7 @@ services:
 ################################
   frontend:
     build: 
-      context: ./my-dashboard
+      context: ./dashboard
     expose:
       - 2000
     ports:
