@@ -11,5 +11,7 @@ public class CollectorService {
 
     public static void main(String[] args) {
         SpringApplication.run(CollectorService.class);
+
+        System.out.println("Starting CollectorService !!");
     }
 }

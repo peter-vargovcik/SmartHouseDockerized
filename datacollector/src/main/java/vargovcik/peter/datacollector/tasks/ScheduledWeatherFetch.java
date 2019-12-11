@@ -16,6 +16,7 @@ public class ScheduledWeatherFetch {
 
     @Scheduled(fixedRate = 5000)
     public void fetch() {
+        System.out.println("The time is now " + dateFormat.format(new Date()));
         log.info("The time is now {}", dateFormat.format(new Date()));
     }
 }
