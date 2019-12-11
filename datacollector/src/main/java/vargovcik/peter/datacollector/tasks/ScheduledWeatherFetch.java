@@ -21,11 +21,12 @@ import java.util.Map;
 
 @Component
 public class ScheduledWeatherFetch {
+    private final static long INTERVAL = 1000 * 60 * 10;
 
     private static final Logger log = LoggerFactory.getLogger(ScheduledWeatherFetch.class);
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = INTERVAL)
     public void fetch() {
 //        System.out.println("The time is now " + dateFormat.format(new Date()));
 
