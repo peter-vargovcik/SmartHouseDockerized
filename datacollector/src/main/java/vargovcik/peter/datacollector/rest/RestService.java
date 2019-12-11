@@ -1,4 +1,4 @@
-package vargovcik.peter.datacollector;
+package vargovcik.peter.datacollector.rest;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @RestController
 @EnableScheduling
-public class App {
+public class RestService {
     public static void main(String[] args) {
-        SpringApplication.run(App.class, args);
+        SpringApplication.run(RestService.class, args);
     }
 
     @RequestMapping(value = "/")
