@@ -2,3 +2,7 @@
 spring:
   thymeleaf.cache: false
   main.show-banner: false
+
+debug: true
+logging:
+  file: /var/log/application-debug.log
