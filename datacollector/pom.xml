@@ -17,7 +17,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <start-class>vargovcik.peter.datacollector.rest.RestService</start-class>
+        <start-class>vargovcik.peter.datacollector.CollectorService</start-class>
         <java.version>1.8</java.version>
         <docker.image.prefix>${user.name}</docker.image.prefix>
     </properties>
