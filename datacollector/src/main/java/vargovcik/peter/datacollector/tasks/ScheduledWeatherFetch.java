@@ -38,6 +38,9 @@ public class ScheduledWeatherFetch {
     @Autowired
     private WeatherRecordRepository repository;
 
+    @Autowired
+    private WeatherRecordRepo repository;
+
     @Scheduled(fixedRate = INTERVAL)
     public void fetch() {
 //        System.out.println("The time is now " + dateFormat.format(new Date()));

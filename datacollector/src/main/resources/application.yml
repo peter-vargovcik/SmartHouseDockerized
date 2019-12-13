@@ -19,4 +19,3 @@ logging:
   level:
     root: WARN # the minimum logging level for the application.
     vargovcik.peter.datacollector: INFO # the minimum logging level for the core application code.
-

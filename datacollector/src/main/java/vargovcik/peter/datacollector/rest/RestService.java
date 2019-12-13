@@ -43,4 +43,11 @@ public class RestService {
     String hello2() {
         return "Hello World Test That!";
     }
+
+    @RequestMapping("/findall")
+    public List<WeatherRecordModel> findAll(){
+        List<WeatherRecordModel> records = repository.findAll();
+
+        return records;
+    }
 }
