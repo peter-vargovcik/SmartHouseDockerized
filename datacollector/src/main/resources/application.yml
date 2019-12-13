@@ -3,9 +3,9 @@ spring:
   thymeleaf.cache: false
   main.show-banner: false
   jpa:
-    hibernate:
-      ddl-auto: create
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    hibernate:
+#      ddl-auto: create
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect
     datasource:
       url: jdbc:postgresql://172.17.0.1:5432/docker
       username: postgres
