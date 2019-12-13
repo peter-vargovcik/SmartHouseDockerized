@@ -2,10 +2,11 @@
 spring:
   thymeleaf.cache: false
   main.show-banner: false
-#  jpa:
-  hibernate:
-    ddl-auto: create
+  jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+    hibernate:
+      ddl-auto: create
   datasource:
     url: jdbc:postgresql://172.17.0.1:5432/docker
     username: postgres
