@@ -2,12 +2,15 @@ package vargovcik.peter.datacollector.tasks;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import vargovcik.peter.datacollector.dto.Metric;
 import vargovcik.peter.datacollector.dto.WeatherRecord;
+import vargovcik.peter.datacollector.model.WeatherRecordModel;
+import vargovcik.peter.datacollector.repo.WeatherRecordRepository;
 import vargovcik.peter.datacollector.utils.ParameterStringBuilder;
 
 import java.io.BufferedReader;
@@ -32,6 +35,8 @@ public class ScheduledWeatherFetch {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduledWeatherFetch.class);
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    @Autowired
+    private WeatherRecordRepository repository;
 
     @Scheduled(fixedRate = INTERVAL)
     public void fetch() {
@@ -139,5 +144,34 @@ public class ScheduledWeatherFetch {
 
     private void saveWeatherRecord(WeatherRecord weatherRecord) {
 
+        Metric metric = weatherRecord.getMetric();
+
+        String stationID = weatherRecord.getStationID();
+        java.sql.Date obsTimeUtc = java.sql.Date.valueOf(weatherRecord.getObsTimeUtc().toLocalDate());
+        java.sql.Date obsTimeLocal = java.sql.Date.valueOf(weatherRecord.getObsTimeLocal().toLocalDate());
+        double solarRadiation = weatherRecord.getSolarRadiation();
+        double temp = metric.getTemp();
+        double heatIndex = metric.getHeatIndex();
+        double dewpt = metric.getDewpt();
+        double windChill = metric.getWindChill();
+        double windSpeed = metric.getWindSpeed();
+        double windGust = metric.getWindGust();
+        double pressure = metric.getPressure();
+        double precipRate = metric.getPrecipRate();
+        double precipTotal = metric.getPrecipTotal();
+        double elev = metric.getElev();
+        int epoch = weatherRecord.getEpoch();
+        double uv = weatherRecord.getUv();
+        int winddir = weatherRecord.getWinddir();
+        double humidity = weatherRecord.getHumidity();
+        int qcStatus = weatherRecord.getQcStatus();
+
+        WeatherRecordModel model = new WeatherRecordModel(
+                stationID,obsTimeUtc,obsTimeLocal,solarRadiation,temp,heatIndex,
+                dewpt,windChill,windSpeed,windGust,pressure,precipRate,
+                precipTotal,elev,epoch,uv,winddir, humidity,qcStatus);
+
+
+        repository.save(model);
     }
 }
