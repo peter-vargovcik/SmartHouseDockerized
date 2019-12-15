@@ -9,13 +9,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import vargovcik.peter.datacollector.dto.Metric;
 import vargovcik.peter.datacollector.dto.WeatherRecord;
-import vargovcik.peter.datacollector.dto.repo.WeatherRecordRepo;
 import vargovcik.peter.datacollector.model.WeatherRecordModel;
 import vargovcik.peter.datacollector.repo.WeatherRecordRepository;
-import vargovcik.peter.datacollector.utils.ParameterStringBuilder;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -26,35 +23,58 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
-public class ScheduledWeatherFetch {
+public class ScheduledOutagesFetch {
     private final static long INTERVAL = 1000 * 60 * 10;
 
-    private static final Logger log = LoggerFactory.getLogger(ScheduledWeatherFetch.class);
+    private static final Logger log = LoggerFactory.getLogger(ScheduledOutagesFetch.class);
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
     @Autowired
     private WeatherRecordRepository repository;
+
+    class Outage{
+        public String outageType;
+        public int outageId;
+        public double latitude;
+        public double longitude;
+    }
 
 
     @Scheduled(fixedRate = INTERVAL)
     public void fetch() {
 //        System.out.println("The time is now " + dateFormat.format(new Date()));
 
-        fetchWeather();
+        double myLatitude = 53.464668;
+        double myLongitude = -7.806648;
+        int radiusInKM = 20;
+        List<Outage> outages = filterOutagesInRadius(getCurentOutages(),myLatitude,myLongitude,radiusInKM);
+        saveOutages(outages);
 
     }
 
-    private void fetchWeather() {
-        log.info("Firing WeatherFetch at {}", dateFormat.format(new Date()));
+    private void saveOutages(List<Outage> outages) {
 
+    }
+
+    private List<Outage> filterOutagesInRadius(List<Outage> curentOutages, double myLatitude, double myLongitude, int radiusInKM) {
+        return null;
+    }
+
+    private List<Outage> getCurentOutages() {
+       String payload = fetchData("https://webservices.esb.ie/networks/outageapp/web/1.0/en/outages?_=" + System.currentTimeMillis());
+
+
+    }
+
+    private String fetchData(String urlString) {
+        String output = null;
         try {
             //https://www.baeldung.com/java-http-request
 
-            URL url = new URL("https://api.weather.com/v2/pws/observations/current?apiKey=6532d6454b8aa370768e63d6ba5a832e&stationId=IARDNA2&numericPrecision=decimal&format=json&units=m");
+            URL url = new URL(urlString);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
 
@@ -82,7 +102,7 @@ public class ScheduledWeatherFetch {
             }
             in.close();
 
-            consumePayload(content.toString());
+            output = content.toString();
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -91,6 +111,7 @@ public class ScheduledWeatherFetch {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return output;
     }
 
     private void consumePayload(String payload) {
@@ -175,5 +196,34 @@ public class ScheduledWeatherFetch {
 
 
         repository.save(model);
+    }
+
+    /**
+     * Calculate distance between two points in latitude and longitude taking
+     * into account height difference. If you are not interested in height
+     * difference pass 0.0. Uses Haversine method as its base.
+     *
+     * lat1, lon1 Start point lat2, lon2 End point el1 Start altitude in meters
+     * el2 End altitude in meters
+     * @returns Distance in Meters
+     */
+    private double distance(double lat1, double lon1, double lat2,
+                                  double lon2, double el1, double el2) {
+
+        final int R = 6371; // Radius of the earth
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c * 1000; // convert to meters
+
+        double height = el1 - el2;
+
+        distance = Math.pow(distance, 2) + Math.pow(height, 2);
+
+        return Math.sqrt(distance);
     }
 }
