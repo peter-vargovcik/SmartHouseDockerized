@@ -58,4 +58,16 @@ public class ParserTests {
         System.out.println(weatherRecord.toString());
     }
 
+    @Test
+    public void test02(){
+        String payload = "{\"outageMessage\":[{\"outageId\":\"1827752\",\"outageType\":\"Planned\",\"point\":{\"coordinates\":\"52.137116459756,-7.497521923139\"}},{\"outageId\":\"1828191\",\"outageType\":\"Fault\",\"point\":{\"coordinates\":\"51.872665933388,-9.923411008752\"}},{\"outageId\":\"1828240\",\"outageType\":\"Fault\",\"point\":{\"coordinates\":\"52.104641533845,-9.895185709542\"}},{\"outageId\":\"1828273\",\"outageType\":\"Fault\",\"point\":{\"coordinates\":\"51.917686449444,-9.380032504769\"}}]}";
+
+        JsonParser springParser = JsonParserFactory.getJsonParser();
+        Map<String, Object> map = springParser.parseMap(payload);
+
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            System.out.println(entry.getKey() + " = " + entry.getValue());
+        }
+    }
+
 }

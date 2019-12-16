@@ -22,6 +22,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -64,9 +65,16 @@ public class ScheduledOutagesFetch {
     }
 
     private List<Outage> getCurentOutages() {
+        List<Outage> outages = new ArrayList<>();
+
        String payload = fetchData("https://webservices.esb.ie/networks/outageapp/web/1.0/en/outages?_=" + System.currentTimeMillis());
 
+        JsonParser springParser = JsonParserFactory.getJsonParser();
+        Map<String, Object> map = springParser.parseMap(payload);
 
+//        Map<String,Object> observationMap = map.get("outageMessage");
+
+        return outages;
     }
 
     private String fetchData(String urlString) {
