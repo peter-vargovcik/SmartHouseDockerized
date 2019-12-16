@@ -6,8 +6,11 @@ import vargovcik.peter.datacollector.dto.WeatherRecord;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static junit.framework.TestCase.assertSame;
 
 public class ParserTests {
 
@@ -62,12 +65,35 @@ public class ParserTests {
     public void test02(){
         String payload = "{\"outageMessage\":[{\"outageId\":\"1827752\",\"outageType\":\"Planned\",\"point\":{\"coordinates\":\"52.137116459756,-7.497521923139\"}},{\"outageId\":\"1828191\",\"outageType\":\"Fault\",\"point\":{\"coordinates\":\"51.872665933388,-9.923411008752\"}},{\"outageId\":\"1828240\",\"outageType\":\"Fault\",\"point\":{\"coordinates\":\"52.104641533845,-9.895185709542\"}},{\"outageId\":\"1828273\",\"outageType\":\"Fault\",\"point\":{\"coordinates\":\"51.917686449444,-9.380032504769\"}}]}";
 
+        class Outage{
+            public String outageType;
+            public String outageId;
+            public double latitude;
+            public double longitude;
+        }
+
+        List<Outage> parsedOutages = new ArrayList<>();
+
         JsonParser springParser = JsonParserFactory.getJsonParser();
         Map<String, Object> map = springParser.parseMap(payload);
 
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            System.out.println(entry.getKey() + " = " + entry.getValue());
+        ArrayList< Map<String, Object>> outages = (ArrayList< Map<String, Object>>)map.get("outageMessage");
+
+        for (Object outageObj : outages) {
+            Map<String,Object> outage = (Map<String,Object>) outageObj;
+            Outage outageHolder = new Outage();
+            outageHolder.outageType = (String) outage.get("outageType");
+            outageHolder.outageId = (String) outage.get("outageId");
+
+           String[] coordinates = ((String) ((Map<String, Object>) outage.get("point")).get("coordinates")).split(",");
+            outageHolder.latitude = Double.parseDouble(coordinates[0]);
+            outageHolder.longitude = Double.parseDouble(coordinates[1]);
+
+            parsedOutages.add(outageHolder);
         }
+
+        assertSame(parsedOutages.size(), 4);
+
     }
 
 }

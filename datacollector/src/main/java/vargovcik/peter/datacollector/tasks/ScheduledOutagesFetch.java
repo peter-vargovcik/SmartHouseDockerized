@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +37,7 @@ public class ScheduledOutagesFetch {
 
     class Outage{
         public String outageType;
-        public int outageId;
+        public String outageId;
         public double latitude;
         public double longitude;
     }
@@ -52,29 +51,53 @@ public class ScheduledOutagesFetch {
         double myLongitude = -7.806648;
         int radiusInKM = 20;
         List<Outage> outages = filterOutagesInRadius(getCurentOutages(),myLatitude,myLongitude,radiusInKM);
-        saveOutages(outages);
+        fetchAndSaveOutages(outages);
 
     }
 
-    private void saveOutages(List<Outage> outages) {
-
+    private void fetchAndSaveOutages(List<Outage> outages) {
+        for(Outage outage : outages){
+            String payload = fetchData("https://webservices.esb.ie/networks/outageapp/web/1.0/en/outages/"+outage.outageId+"?_=" + System.currentTimeMillis());
+            // TODO Parse and Fetch the outage
+        }
     }
 
     private List<Outage> filterOutagesInRadius(List<Outage> curentOutages, double myLatitude, double myLongitude, int radiusInKM) {
-        return null;
+        List<Outage> filteredOutages = new ArrayList<>();
+
+        for(Outage outage : curentOutages){
+            if(distance(myLatitude,myLongitude,outage.latitude,outage.longitude,1,1) <= radiusInKM){
+                filteredOutages.add(outage);
+            }
+        }
+
+        return filteredOutages;
     }
 
     private List<Outage> getCurentOutages() {
-        List<Outage> outages = new ArrayList<>();
+        List<Outage> parsedOutages = new ArrayList<>();
 
        String payload = fetchData("https://webservices.esb.ie/networks/outageapp/web/1.0/en/outages?_=" + System.currentTimeMillis());
 
         JsonParser springParser = JsonParserFactory.getJsonParser();
         Map<String, Object> map = springParser.parseMap(payload);
 
-//        Map<String,Object> observationMap = map.get("outageMessage");
+        ArrayList< Map<String, Object>> outages = (ArrayList< Map<String, Object>>)map.get("outageMessage");
 
-        return outages;
+        for (Object outageObj : outages) {
+            Map<String,Object> outage = (Map<String,Object>) outageObj;
+            Outage outageHolder = new Outage();
+            outageHolder.outageType = (String) outage.get("outageType");
+            outageHolder.outageId = (String) outage.get("outageId");
+
+            String[] coordinates = ((String) ((Map<String, Object>) outage.get("point")).get("coordinates")).split(",");
+            outageHolder.latitude = Double.parseDouble(coordinates[0]);
+            outageHolder.longitude = Double.parseDouble(coordinates[1]);
+
+            parsedOutages.add(outageHolder);
+        }
+
+        return parsedOutages;
     }
 
     private String fetchData(String urlString) {
