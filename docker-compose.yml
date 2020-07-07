@@ -36,6 +36,7 @@ services:
       - PGHOST=db
       - PGDATABASE=postgres
       - PGUSER=postgres
+      - RABBIT_MQ_HOST=172.17.0.2
 
 ################################
 #   Setup frontend container

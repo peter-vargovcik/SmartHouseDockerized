@@ -1,10 +1,14 @@
 package vargovcik.peter.datacollector.tasks;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import vargovcik.peter.datacollector.dto.Metric;
@@ -21,6 +25,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 @Component
 public class ScheduledWeatherFetch {
@@ -35,11 +41,12 @@ public class ScheduledWeatherFetch {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduledWeatherFetch.class);
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    private static final String TOPIC_NAME = "weather-update-topic";
     @Autowired
     private WeatherRecordRepository repository;
 
     @Autowired
-    private WeatherRecordRepo repository;
+    private Environment env;
 
     @Scheduled(fixedRate = INTERVAL)
     public void fetch() {
@@ -83,6 +90,7 @@ public class ScheduledWeatherFetch {
             }
             in.close();
 
+            publishToWeatherTopic(content.toString());
             consumePayload(content.toString());
 
         } catch (MalformedURLException e) {
@@ -90,6 +98,26 @@ public class ScheduledWeatherFetch {
         } catch (ProtocolException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void publishToWeatherTopic(String message) {
+        String rabbitMqHost = env.getProperty("RABBIT_MQ_HOST");
+
+        try {
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost(rabbitMqHost);
+
+            try (Connection connection = factory.newConnection();
+                 Channel channel = connection.createChannel()) {
+                channel.exchangeDeclare(TOPIC_NAME, "topic");
+
+                channel.basicPublish(TOPIC_NAME, "anonymous.info", null, message.getBytes(StandardCharsets.UTF_8));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
             e.printStackTrace();
         }
     }
